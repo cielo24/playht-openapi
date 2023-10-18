@@ -1,0 +1,440 @@
+openapi: 3.0.0
+info:
+  title: PlayHT API
+  version: 1.0.0
+  description: "The PlayHT's API API allows developers to Realtime Text to Speech streaming Stream audio bytes from text, Convert long form Text to Speech Generate audio from text, and Voice Cloning Instant Cloning."
+  termsOfService: "https://play.ht/terms/"
+  contact:
+    email: "devs@play.ht"
+
+servers:
+  - url: 'https://api.play.ht'
+
+paths:
+  /api/v2/voices:
+    get:
+      summary: Gets the full list of stock PlayHT Voices available for use with the API.
+      operationId: voices
+      responses:
+        200:
+          description: Gets the list of available PlayHT Voices.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VoiceResponse'
+            application/json; charset=utf-8:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VoiceResponse'
+        401:
+          description: "The request was not authorized. Please verity your authorization headers."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        429:
+          description: "The server has received too many requests from your IP address within a certain time frame and has temporarily blocked your access to this resource. This error is used to prevent abuse of the server."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+      security:
+        - ApiKeyAuth: []
+        - UserAuth: []
+
+  /api/v2/cloned-voices:
+    get:
+      summary: Obtains a list of all cloned voices created by the user.
+      operationId: cloned_voices
+      responses:
+        200:
+          description: Gets the list of cloned voices for the user.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClonedVoiceResponse'
+            application/json; charset=utf-8:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClonedVoiceResponse'
+        401:
+          description: "The request was not authorized. Please verity your authorization headers."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        403:
+          description: "The provided API key's plan does not have access to the requested resource."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        429:
+          description: "The server has received too many requests from your IP address within a certain time frame and has temporarily blocked your access to this resource. This error is used to prevent abuse of the server."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: "An unexpected error occurred."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - ApiKeyAuth: []
+        - UserAuth: []
+
+    delete:
+      summary: Delete Cloned Voices. Deletes a cloned voice created by the user using the provided voice_id.
+      operationId: delete_cloned_voices
+      parameters:
+        - name: voice_id
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The ID of the cloned voice to be deleted.
+      responses:
+        200:
+          description: Deletes a cloned voice created by the user.
+        401:
+          description: "The request was not authorized. Please verity your authorization headers."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        403:
+          description: "The provided API key's plan does not have access to the requested resource."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        429:
+          description: "The server has received too many requests from your IP address within a certain time frame and has temporarily blocked your access to this resource. This error is used to prevent abuse of the server."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: "An unexpected error occurred."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - ApiKeyAuth: []
+        - UserAuth: []
+
+  /api/v2/cloned-voices/instant/:
+    post:
+      summary: "Create Instant Voice Clone (via file URL). Create an instant voice clone by providing an URL for a sample audio file."
+      operationId: create_instant_voice_clone_url
+      parameters:
+        - name: sample_file_url
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The URL of the audio file selected as the source for the voice clone. The file should have a duration ranging from 2 seconds to 1 hour. It can be in any audio format, as long as it falls within the size range of 5kb to 50 MB
+        - name: voice_name
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The name for this new cloned voice.
+          example: sales-voice
+      responses:
+        200:
+          description: Instant voice clone successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SSMLConversionResponse'
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/SSMLConversionResponse'
+        403:
+          description: "The provided API key's plan does not have access to the requested resource."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - ApiKeyAuth: []
+        - UserAuth: []
+
+  /api/v1/convert:
+    post:
+      summary: "Convert SSML to Speech. It can generate text for Standard & Premium (S&P) voices. The identifiers for these voices look like 'en-US-JennyNeural'. If you are using PlayHT voices (their identifiers look like 'larry' or a URL)."
+      operationId: convert_ssml_to_speech
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SSMLConversionPayload'
+      responses:
+        200:
+          description: Conversion job created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SSMLConversionResponse'
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/SSMLConversionResponse'
+        400:
+          description: "The provided payload contains one or more invalid parameters."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        401:
+          description: "The request was not authorized. Please verity your authorization headers."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        403:
+          description: "The provided API key's plan does not have access to the requested resource."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        415:
+          description: "The server could not process your request because the format of the data you sent is not supported. Check Content-Type header of your request and ensure that it is set to a supported media type. You may also need to update your request payload to match the expected media type for the resource you are trying to access."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        429:
+          description: "The server has received too many requests from your IP address within a certain time frame and has temporarily blocked your access to this resource. This error is used to prevent abuse of the server."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: "An unexpected error occurred."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - ApiKeyAuth: []
+        - UserAuth: []
+
+  /api/v1/articleStatus:
+    get:
+      summary: Get conversion job status. Gets text-to-speech job status and generated audio file URL.
+      operationId: get_conversion_job_status
+      parameters:
+        - name: transcriptionId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Transcription ID
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversionJobStatusResponse'
+            application/json; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/ConversionJobStatusResponse'
+        403:
+          description: "The provided API key's plan does not have access to the requested resource."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+      security:
+        - ApiKeyAuth: []
+        - UserAuth: []
+
+components:
+  schemas:
+    VoiceResponse:
+      type: object
+      required:
+      - id
+      - name
+      - language
+      - language_code
+      properties:
+        id:
+          type: string
+          description: Unique ID for a PlayHT or Cloned Voice.
+        name:
+          type: string
+          description: The name of the voice.
+        sample:
+          type: string
+          description: URI sample of the voice. Can be null.
+        accent:
+          type: string
+          description: Accent of the voice.
+          example: american
+        age:
+          type: string
+          description: Age classification of the voice.
+          enum: [adult, old, youth]
+        gender:
+          type: string
+          description: Gender of the voice.
+          enum: [female, male]
+        language:
+          type: string
+          description: Descriptive language name.
+          example: English (US)
+        language_code:
+          type: string
+          description: Code of the language.
+          example: en-US
+        loudness:
+          type: string
+          description: Loudness of the voice.
+          enum: [low, neutral, whisper, high]
+        style:
+          type: string
+          description: Style of voice narration.
+          enum: [narrative, videos, training, advertising, meditation, gaming]
+        tempo:
+          type: string
+          description: Speaking tempo of the voice.
+          enum: [neutral, slow, fast]
+        texture:
+          type: string
+          description: Texture of the voice.
+          enum: [gravelly, smooth, round, thick]
+        is_cloned:
+          type: boolean
+          description: If the voice is a cloned voice.
+        voice_engine:
+          type: string
+          description: The voice engine used to synthesize the voice.
+          enum: [PlayHT1.0, PlayHT2.0]
+
+    ClonedVoiceResponse:
+      type: object
+      required:
+      - id
+      - name
+      - type
+      properties:
+        id:
+          type: string
+          description: Unique ID for a PlayHT or Cloned Voice.
+        name:
+          type: string
+          description: The name of the voice.
+        type:
+          type: string
+          enum: [high-fidelity, instant]
+
+    SSMLConversionPayload:
+      type: object
+      required:
+      - ssml
+      - voice
+      properties:
+        ssml:
+          type: array
+          items:
+            type: string
+          description: Array of strings, where each string represents a paragraph in SSML format.
+          example: <speak><p>Hello my friend <break time="0.5s"/></p></speak>
+        voice:
+          type: string
+          description: Voice used to synthesize the text.
+          example: en-US-JennyNeural
+        title:
+          type: string
+          description: A name to your file. You can use this name to find the audio in your Play.ht dashboard.
+        narrationStyle:
+          type: string
+          description: String representing the tone and accent of the voice to read the text. Make sure the value for narrationStyle is supported by the voice in your request.
+        globalSpeed:
+          type: string
+          description: String in the format <number>%, where <number> is in the closed interval of [20, 200]. Use this to speed-up, or slow-down the speaking rate of the speech.
+        pronunciations:
+          type: array
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+                example: Play.ht
+              value:
+                type: string
+                example: Play dot H T
+          description: Array of objects to handle specific word pronunciations.
+        trimSilence:
+          type: boolean
+          description: When enabled, the audio will be trimmed to remove any silence from the end of the file.
+        transcriptionId:
+          type: string
+          description: Pass this to update an existing audio file.
+
+    SSMLConversionResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Status of the conversion.
+          enum: [CREATED, error]
+        transcriptionId:
+          type: string
+          description: This is the ID you need to use to poll the status of the audio file in the Get Article Conversion Status endpoint.
+        contentLength:
+          type: number
+          description: Length of the converted content.
+        wordCount:
+          type: number
+          description: Number of words in the converted content.
+
+    ConversionJobStatusResponse:
+      type: object
+      properties:
+        voice:
+          type: string
+          description: The voice used for transcription.
+        converted:
+          type: boolean
+          description: Whether the audio has been transcribed yet.
+        audioDuration:
+          type: number
+          description: The duration of the audio file in seconds.
+        audioUrl:
+          type: string
+          description: The URL of the generated audio file.
+        message:
+          type: string
+          description: A message about the status of the transcription job.
+
+    ErrorResponse:
+      type: object
+      properties:
+        ErrorMessage:
+          type: string
+        ErrorString:
+          type: string
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: AUTHORIZATION
+    UserAuth:
+      type: apiKey
+      in: header
+      name: X-USER-ID
