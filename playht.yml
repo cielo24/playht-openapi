@@ -46,6 +46,35 @@ paths:
         - ApiKeyAuth: []
         - UserAuth: []
 
+  /api/v1/getVoices:
+    get:
+      summary: Gets the full list of Standard & Premium (S&P) voices.
+      operationId: sp_voices
+      responses:
+        200:
+          description: Gets the list of available S&P Voices.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SPVoiceResponse'
+            application/json; charset=utf-8:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SPVoiceResponse'
+        403:
+          description: "The provided API key's plan does not have access to the requested resource."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+      security:
+        - ApiKeyAuth: []
+        - UserAuth: []
+
   /api/v2/cloned-voices:
     get:
       summary: Obtains a list of all cloned voices created by the user.
@@ -323,6 +352,69 @@ components:
           type: string
           description: The voice engine used to synthesize the voice.
           enum: [PlayHT1.0, PlayHT2.0]
+
+    SPVoiceResponse:
+      type: object
+      properties:
+        voices:
+          type: array
+          items:
+            $ref: '#/components/schemas/SPVoice'
+      required:
+      - voices
+
+
+    SPVoice:
+      type: object
+      required:
+      - value
+      - name
+      - language
+      - voiceType
+      - languageCode
+      - gender
+      - service
+      - sample
+      properties:
+        value:
+          type: string
+          description: Unique ID for S&P voice.
+        name:
+          type: string
+          description: The name of the voice.
+        language:
+          type: string
+          description: Descriptive language name.
+          example: English (US)
+        voiceType:
+          type: string
+          description: Voice type.
+          enum: [Standard, Neural]
+        languageCode:
+          type: string
+          description: Code of the language.
+          example: en-US
+        gender:
+          type: string
+          description: Gender of the voice.
+          enum: [Female, Male]
+        service:
+          type: string
+          description: Voice service.
+          enum: [polly, gc, ms, watson]
+        sample:
+          type: string
+          description: URI with a sample of the voice.
+        styles:
+          type: array
+          items:
+            type: string
+        isKid:
+          type: boolean
+          description: If the voice is from a kid.
+        isNew:
+          type: boolean
+          description: If the voice is new.
 
     ClonedVoiceResponse:
       type: object
