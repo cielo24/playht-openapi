@@ -56,14 +56,10 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SPVoiceResponse'
+                $ref: '#/components/schemas/SPVoiceResponse'
             application/json; charset=utf-8:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SPVoiceResponse'
+                $ref: '#/components/schemas/SPVoiceResponse'
         403:
           description: "The provided API key's plan does not have access to the requested resource."
           content:
@@ -353,15 +349,16 @@ components:
           description: The voice engine used to synthesize the voice.
           enum: [PlayHT1.0, PlayHT2.0]
 
+
     SPVoiceResponse:
       type: object
+      required:
+      - voices
       properties:
         voices:
           type: array
           items:
             $ref: '#/components/schemas/SPVoice'
-      required:
-      - voices
 
 
     SPVoice:
